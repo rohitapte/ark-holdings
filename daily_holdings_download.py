@@ -1,15 +1,11 @@
 import os
 import requests
-from mysql.connector import connect, Error
+from mysql.connector import Error
 from pathlib import Path
 import csv
 import datetime
+from globals import cxn
 
-cxn = connect(host="localhost",
-                user="arkuser",
-                password="arkuser123",
-                database='arkdb'
-              )
 
 def get_etf_list():
     data={}
