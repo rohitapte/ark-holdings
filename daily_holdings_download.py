@@ -6,7 +6,6 @@ import csv
 import datetime
 from globals import cxn
 
-
 def get_etf_list():
     data={}
     try:
@@ -28,9 +27,9 @@ def get_etf_list():
         print(e)
     return data
 
-def delete_data_for_etf_and_date(etfname, date):
+def delete_data_for_etf_and_date(etfname, asofDate):
     try:
-        delete_query = "delete from holdings WHERE etfname='" + etfname + "' and asof_date='" + date + "'"
+        delete_query = "delete from holdings WHERE etfname='" + etfname + "' and asof_date='" + asofDate + "'"
         with cxn.cursor() as cursor:
             cursor.execute(delete_query)
             cxn.commit()
@@ -55,8 +54,8 @@ def download_daily_holdings():
     data = get_etf_list()
     for key, value in data.items():
         response = requests.get(value['csv_url'])
-        date = list(csv.reader(response.text.split('\n'), delimiter=','))[1][0]
-        formatted_date = datetime.datetime.strptime(date, '%m/%d/%Y').strftime('%Y-%m-%d')
+        asofDate = list(csv.reader(response.text.split('\n'), delimiter=','))[1][0]
+        formatted_date = datetime.datetime.strptime(asofDate, '%m/%d/%Y').strftime('%Y-%m-%d')
         filename = Path('holdings_data/' + value['csv_url'][value['csv_url'].rfind('/') + 1:].replace('.csv',
                                                                                                       '_' + formatted_date + '.csv'))
         filename.write_bytes(response.content)
@@ -72,9 +71,9 @@ def upload_etf_data():
                 reader = list(csv.reader(file))
                 data=[]
                 sDate=reader[1][0]
-                date=datetime.datetime.strptime(sDate, '%m/%d/%Y').strftime('%Y-%m-%d')
+                asofDate=datetime.datetime.strptime(sDate, '%m/%d/%Y').strftime('%Y-%m-%d')
                 etfname=reader[1][1]
-                delete_data_for_etf_and_date(etfname,date)
+                delete_data_for_etf_and_date(etfname,asofDate)
                 for row in reader[1:]:
                     if row[0]!='':
                         assert(row[0]==sDate)
@@ -86,5 +85,5 @@ def upload_etf_data():
 
 
 if __name__ == "__main__":
-    #download_daily_holdings()
+    download_daily_holdings()
     upload_etf_data()
